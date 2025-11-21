@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plant Share System</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f9f4; color: #333; }
+
+    header {
+      background: #3c8c63;
+      color: white;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    header h1 { font-size: 1.8em; }
+    .login-btn {
+      background: white; color: #3c8c63;
+      padding: 10px 20px;
+      border: none; border-radius: 25px;
+      font-weight: bold; cursor: pointer;
+      transition: 0.3s;
+    }
+    .login-btn:hover { background: #2e6f50; color: white; }
+
+    .hero {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      height: 80vh; text-align: center;
+      background: linear-gradient(rgba(60,140,99,0.2), rgba(60,140,99,0.2)), url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1950&q=80') center/cover no-repeat;
+      color: #2f3e46; padding: 20px;
+    }
+    .hero h2 { font-size: 2.5em; margin-bottom: 15px; }
+    .hero p {
+      max-width: 700px; font-size: 1.1em; line-height: 1.6;
+      background: rgba(255,255,255,0.8); padding: 15px 20px; border-radius: 10px;
+    }
+
+    .about { background: #ffffff; padding: 50px 20px; text-align: center; }
+    .about h3 { font-size: 2em; color: #3c8c63; margin-bottom: 15px; }
+    .about p {
+      max-width: 800px; margin: 0 auto;
+      font-size: 1.05em; line-height: 1.8; color: #444;
+    }
+
+    footer {
+      background: #3c8c63; color: white; text-align: center;
+      padding: 15px 0; margin-top: 40px; font-size: 0.9em;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none; position: fixed; z-index: 10; left: 0; top: 0;
+      width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff; margin: 10% auto; padding: 25px 30px;
+      border-radius: 15px; width: 90%; max-width: 400px;
+      text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .close { color: #aaa; float: right; font-size: 28px; cursor: pointer; }
+    .close:hover { color: #000; }
+
+    .login-options {
+      display: flex; justify-content: space-around; margin: 20px 0;
+    }
+    .option-btn {
+      background: #3c8c63; color: white; border: none;
+      padding: 10px 20px; border-radius: 25px; cursor: pointer;
+      transition: 0.3s;
+    }
+    .option-btn:hover { background: #2e6f50; }
+
+    .login-form, .signup-form {
+      display: none; flex-direction: column; gap: 15px;
+      margin-top: 20px; text-align: left;
+    }
+    input {
+      width: 100%; padding: 10px; border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #3c8c63; color: white; padding: 10px;
+      border: none; border-radius: 10px; cursor: pointer; transition: 0.3s;
+    }
+    button:hover { background: #2e6f50; }
+
+    .switch { text-align: center; margin-top: 10px; font-size: 0.9em; }
+    .switch a { color: #3c8c63; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .switch a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .hero h2 { font-size: 2em; }
+      header h1 { font-size: 1.4em; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Green Circle🌱</h1>
+    <button class="login-btn" id="openModal">Login</button>
+  </header>
+
+  <section class="hero">
+    <h2>Connect, Share, and Grow Together 🌿</h2>
+    <p>Green Circle is a community-driven platform where garden lovers can share, or donate plants with others in their neighborhood. Let’s make our surroundings greener — one plant at a time!</p>
+  </section>
+
+  <section class="about">
+    <h3>About the Application</h3>
+    <p>
+      The <strong>Green Circle</strong> encourages plant enthusiasts to connect their plants easily.
+      Users can log in, showcase the plants they have, and explore what others are offering.
+      Whether you're a beginner gardener or a seasoned plant lover, this app helps you expand your green collection while fostering a caring community.
+    </p>
+  </section>
+
+  <!-- Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+
+      <!-- Login Section -->
+      <div id="loginSection">
+        <h2>Choose Login Type</h2>
+        <div class="login-options">
+          <button class="option-btn" onclick="showForm('admin')">Admin</button>
+          <button class="option-btn" onclick="showForm('user')">User</button>
+        </div>
+
+        <!-- Admin Login -->
+        <form id="adminForm" class="login-form">
+          <h3>Admin Login</h3>
+          <input id="adminUser" type="text" placeholder="Admin Username" required />
+          <input id="adminPass" type="password" placeholder="Password" required />
+          <button type="submit">Login as Admin</button>
+        </form>
+
+        <!-- User Login -->
+        <form id="userForm" class="login-form">
+          <h3>User Login</h3>
+          <input id="userEmail" type="email" placeholder="Email" required />
+          <input id="userPass" type="password" placeholder="Password" required />
+          <button type="submit">Login as User</button>
+          <div class="switch">
+            Don't have an account? <a onclick="showSignup()">Sign Up</a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signup Section -->
+      <form id="signupSection" class="signup-form">
+        <h3>Create Your Account 🌱</h3>
+        <input id="signupName" type="text" placeholder="Full Name" required />
+        <input id="signupEmail" type="email" placeholder="Email" required />
+        <input id="signupPass" type="password" placeholder="Password" required />
+        <input id="signupConfirm" type="password" placeholder="Confirm Password" required />
+        <button type="submit">Sign Up</button>
+        <div class="switch">
+          Already have an account? <a onclick="showLogin()">Login</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Green Circle | Designed with 🌱 and passion
+  </footer>
+
+  <script>
+    const modal = document.getElementById("loginModal");
+    const openModal = document.getElementById("openModal");
+    const closeModal = document.getElementById("closeModal");
+    const adminForm = document.getElementById("adminForm");
+    const userForm = document.getElementById("userForm");
+    const signupSection = document.getElementById("signupSection");
+    const loginSection = document.getElementById("loginSection");
+
+    openModal.onclick = () => {
+      modal.style.display = "block";
+      resetForms();
+      loginSection.style.display = "block";
+    };
+    closeModal.onclick = () => (modal.style.display = "none");
+    window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+
+    function showForm(type) {
+      if (type === "admin") {
+        adminForm.style.display = "flex";
+        userForm.style.display = "none";
+      } else {
+        userForm.style.display = "flex";
+        adminForm.style.display = "none";
+      }
+    }
+
+    function showSignup() {
+      loginSection.style.display = "none";
+      signupSection.style.display = "flex";
+    }
+
+    function showLogin() {
+      signupSection.style.display = "none";
+      loginSection.style.display = "block";
+      userForm.style.display = "none";
+      adminForm.style.display = "none";
+    }
+
+    function resetForms() {
+      adminForm.style.display = "none";
+      userForm.style.display = "none";
+      signupSection.style.display = "none";
+    }
+
+    // Default Admin
+    const adminCredentials = { username: "admin123", password: "admin@green" };
+
+    // SIGNUP
+    document.getElementById("signupSection").onsubmit = function (e) {
+      e.preventDefault();
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+      const pass = document.getElementById("signupPass").value;
+      const confirm = document.getElementById("signupConfirm").value;
+
+      if (pass !== confirm) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+
+      if (users.some(u => u.email === email)) {
+        alert("Email already registered!");
+        return;
+      }
+
+      users.push({ name, email, pass, profilePic: '' });
+      localStorage.setItem("users", JSON.stringify(users));
+
+      alert("Account created successfully! Please log in.");
+      showLogin();
+      showForm('user');
+    };
+
+    // USER LOGIN
+    document.getElementById("userForm").onsubmit = function (e) {
+      e.preventDefault();
+      const email = document.getElementById("userEmail").value.trim().toLowerCase();
+      const pass = document.getElementById("userPass").value;
+
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+      const user = users.find(u => u.email === email && u.pass === pass);
+
+      if (!user) {
+        const exists = users.some(u => u.email === email);
+        if (exists) {
+          alert("Incorrect password. Please try again.");
+        } else {
+          alert("No account found. Please sign up first.");
+        }
+        return;
+      }
+
+      // Store current user for dashboard
+      localStorage.setItem("currentUser", JSON.stringify(user));
+
+      // Redirect to user dashboard
+      window.location.href = "userDashboard.html";
+    };
+
+    // ADMIN LOGIN
+    document.getElementById("adminForm").onsubmit = function (e) {
+      e.preventDefault();
+      const username = document.getElementById("adminUser").value.trim();
+      const pass = document.getElementById("adminPass").value;
+
+      if (username === adminCredentials.username && pass === adminCredentials.password) {
+        alert("Welcome Admin!");
+        localStorage.setItem("isAdminLoggedIn", "true");
+        window.location.href = "adminDashboard.html";
+      } else {
+        alert("Invalid admin credentials!");
+      }
+    };
+  </script>
+</body>
+</html>

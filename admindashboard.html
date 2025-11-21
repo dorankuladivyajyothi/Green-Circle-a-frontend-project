@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard | Plant Donation System</title>
+<style>
+:root{
+  --primary:#2d6a4f;
+  --secondary:#eafaf1;
+  --text:#333;
+  --card-bg:#fff;
+  --muted:#7a7a7a;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,sans-serif}
+body{background:var(--secondary);color:var(--text);}
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:1rem 2rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+header h1{font-size:1.5rem;}
+nav{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+}
+nav button{
+  background:#fff;
+  color:var(--primary);
+  border:none;
+  padding:0.6rem 1rem;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+}
+nav button.active, nav button:hover{background:var(--primary);color:#fff;}
+.logout-btn{
+  background:#c0392b;
+  color:#fff;
+  border:none;
+  padding:0.6rem 1rem;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
+}
+.logout-btn:hover{background:#a93226;}
+main{padding:1.5rem;}
+.section{display:none;}
+.section.active{display:block;animation:fadeIn 0.4s ease-in-out;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.card{
+  background:var(--card-bg);
+  border-radius:12px;
+  padding:1rem 1.5rem;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom:1.5rem;
+}
+.table-container{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;margin-top:0.5rem;}
+th,td{border-bottom:1px solid #ddd;padding:0.75rem;text-align:left;}
+th{background:var(--primary);color:#fff;}
+tr:hover{background:#f7f7f7;}
+.btn{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  padding:0.4rem 0.8rem;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:0.9rem;
+}
+.btn.danger{background:#c0392b;}
+.btn.secondary{background:#555;}
+textarea{width:100%;height:70px;border-radius:6px;border:1px solid #ccc;padding:0.5rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-top:12px}
+.stat-card{background:#fff;padding:16px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.06);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 Admin Dashboard</h1>
+  <nav>
+    <button class="tab-btn active" data-tab="users">Manage Users</button>
+    <button class="tab-btn" data-tab="plants">Manage Plants</button>
+    <button class="tab-btn" data-tab="stats">Status</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Manage Users -->
+  <section id="users" class="section active">
+    <div class="card">
+      <h2>👥 Manage Users</h2>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
+          <tbody id="userTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Manage Plants -->
+  <section id="plants" class="section">
+    <div class="card">
+      <h2>🌾 Manage Plants & Seeds</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Picture</th>
+              <th>Name</th>
+              <th>Donor</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="plantTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Status -->
+  <section id="stats" class="section">
+    <div class="card">
+      <h2>📊 Status</h2>
+      <div class="stats-grid">
+        <div class="stat-card"><h2 id="statUsers">0</h2><p>Registered Users</p></div>
+        <div class="stat-card"><h2 id="statPlants">0</h2><p>Plants Donated</p></div>
+        <div class="stat-card"><h2 id="statSeeds">0</h2><p>Seeds Donated</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// Read from localStorage
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let plants = JSON.parse(localStorage.getItem("plants")) || [];
+let seeds = JSON.parse(localStorage.getItem("seeds")) || [];
+
+// Render Users Table
+function renderUsers(){
+  document.getElementById('userTable').innerHTML = users.map((u,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><button class='btn danger' onclick='deleteUser(${i})'>Delete</button></td>
+    </tr>`).join('');
+}
+
+// Render Plants Table (with image)
+function renderPlants(){
+  const allPlants = [...plants, ...seeds];
+  document.getElementById('plantTable').innerHTML = allPlants.map((p,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>
+        ${p.image 
+          ? `<img src="${p.image}" alt="${p.name}" style="width:60px;height:60px;border-radius:6px;object-fit:cover;">`
+          : `<span style="color:#999;">No image</span>`}
+      </td>
+      <td>${p.name}</td>
+      <td>${p.donor || 'Unknown'}</td>
+      <td>${p.type}</td>
+      <td><button class='btn danger' onclick='deletePlant(${i})'>Delete</button></td>
+    </tr>`).join('');
+}
+
+// Delete User
+function deleteUser(idx){
+  if(confirm("Delete this user?")) {
+    users.splice(idx,1);
+    localStorage.setItem("users", JSON.stringify(users));
+    renderUsers();
+    updateStats();
+  }
+}
+
+// Delete Plant
+function deletePlant(idx){
+  const allPlants = [...plants, ...seeds];
+  if(confirm("Delete this entry?")) {
+    if(idx<plants.length) plants.splice(idx,1);
+    else seeds.splice(idx - plants.length,1);
+    localStorage.setItem("plants", JSON.stringify(plants));
+    localStorage.setItem("seeds", JSON.stringify(seeds));
+    renderPlants();
+    updateStats();
+  }
+}
+
+// Tabs
+const tabs = document.querySelectorAll('.tab-btn');
+tabs.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    tabs.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Stats
+function updateStats(){
+  document.getElementById('statUsers').textContent = users.length;
+  document.getElementById('statPlants').textContent = plants.length;
+  document.getElementById('statSeeds').textContent = seeds.length;
+}
+
+// ===== LOGOUT =====
+function logout(){
+  localStorage.removeItem("currentAdmin");
+  alert("Admin has been logged out!");
+  window.location.href = "homepage.html";  // Redirect to homepage
+}
+
+// Initial render
+renderUsers();
+renderPlants();
+updateStats();
+</script>
+</body>
+</html>
